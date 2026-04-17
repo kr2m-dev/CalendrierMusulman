@@ -108,55 +108,78 @@ const CalendarApp = {
         }
     },
 
-    createDayCell(date, day) {
-        const cell = document.createElement('div');
-        const isToday = this.isSameDay(date, this.today);
-        const events = CalendarEvents.getEventsForDate(date);
-        const dayOfWeek = date.getDay();
-        const hijriDate = HijriConverter.gregorianToHijri(date);
-        const daySignificance = CalendarEvents.getDaySignificance(date);
+  createDayCell(date, day) {
+    const cell = document.createElement('div');
+    const isToday = this.isSameDay(date, this.today);
+    const events = CalendarEvents.getEventsForDate(date);
+    const dayOfWeek = date.getDay();
+    const hijriDate = HijriConverter.gregorianToHijri(date);
+    const daySignificance = CalendarEvents.getDaySignificance(date);
 
-        let classes = 'day-cell h-24 border border-gray-100 p-2 cursor-pointer relative overflow-hidden';
+    let classes = 'day-cell h-24 border border-gray-100 p-2 cursor-pointer relative overflow-hidden';
 
-        // Couleur de fond selon le type de jour
-        if (daySignificance && daySignificance.color) {
-            const colorMap = {
-                'red': 'bg-red-100',
-                'yellow': 'bg-yellow-100',
-                'blue': 'bg-blue-100',
-                'amber': 'bg-amber-100',
-                'purple': 'bg-purple-100',
-                'emerald': 'bg-emerald-100'
-            };
-            classes += ' ' + (colorMap[daySignificance.color] || 'bg-white');
-        } else if (dayOfWeek === 5) {
-            classes += ' bg-emerald-50/50';
-        } else {
-            classes += ' bg-white hover:bg-gray-50';
-        }
+    // SI C'EST AUJOURD'HUI - Style très visible
+    if (isToday) {
+      classes += ' bg-gradient-to-br from-emerald-400 to-emerald-600 border-emerald-600 shadow-lg transform scale-[1.02] z-10';
+    } else if (daySignificance && daySignificance.color) {
+      // Couleur de fond selon le type de jour
+      const colorMap = {
+        'red': 'bg-red-100',
+        'yellow': 'bg-yellow-100',
+        'blue': 'bg-blue-100',
+        'amber': 'bg-amber-100',
+        'purple': 'bg-purple-100',
+        'emerald': 'bg-emerald-100'
+      };
+      classes += ' ' + (colorMap[daySignificance.color] || 'bg-white');
+    } else if (dayOfWeek === 5) {
+      classes += ' bg-emerald-50/50';
+    } else {
+      classes += ' bg-white hover:bg-gray-50';
+    }
 
-        if (isToday) {
-            classes += ' today ring-2 ring-emerald-500';
-        }
+    cell.className = classes;
+    cell.setAttribute('data-date', date.toISOString().split('T')[0]);
 
-        cell.className = classes;
-        cell.setAttribute('data-date', date.toISOString().split('T')[0]);
+    // Badge AUJOURD'HUI très visible
+    if (isToday) {
+      const todayBadge = document.createElement('div');
+      todayBadge.className = 'absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse';
+      todayBadge.textContent = 'AUJOURD\'HUI';
+      cell.appendChild(todayBadge);
+    }
 
-        // Contenu de la cellule
-        const dayNumber = document.createElement('div');
-        dayNumber.className = 'flex items-center justify-between mb-1';
+    // Contenu de la cellule
+    const dayNumber = document.createElement('div');
+    dayNumber.className = 'flex items-center justify-between mb-1';
 
-        const gregNum = document.createElement('span');
-        gregNum.className = `text-lg font-bold ${isToday ? 'text-emerald-600' : 'text-gray-700'}`;
-        gregNum.textContent = day;
+    const gregNum = document.createElement('span');
+    if (isToday) {
+      gregNum.className = 'text-2xl font-bold text-white drop-shadow-md';
+    } else {
+      gregNum.className = 'text-lg font-bold text-gray-700';
+    }
+    gregNum.textContent = day;
 
-        const hijriNum = document.createElement('span');
-        hijriNum.className = 'text-sm font-arabic text-emerald-600';
-        hijriNum.textContent = hijriDate.day;
+    const hijriNum = document.createElement('span');
+    if (isToday) {
+      hijriNum.className = 'text-sm font-arabic text-white/90 font-bold';
+    } else {
+      hijriNum.className = 'text-sm font-arabic text-emerald-600';
+    }
+    hijriNum.textContent = hijriDate.day;
 
-        dayNumber.appendChild(gregNum);
-        dayNumber.appendChild(hijriNum);
-        cell.appendChild(dayNumber);
+    dayNumber.appendChild(gregNum);
+    dayNumber.appendChild(hijriNum);
+    cell.appendChild(dayNumber);
+
+    // Icône spéciale pour aujourd'hui
+    if (isToday) {
+      const todayIcon = document.createElement('div');
+      todayIcon.className = 'absolute bottom-2 left-2 text-xl animate-bounce';
+      todayIcon.textContent = '📍';
+      cell.appendChild(todayIcon);
+    }
 
         // Indicateurs d'evenements
         if (events.length > 0) {

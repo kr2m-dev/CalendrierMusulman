@@ -26,10 +26,19 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .day-cell.today {
-            box-shadow: 0 0 0 2px #10b981;
-        }
-        .modal-overlay {
+    .day-cell.today {
+      box-shadow: 0 0 0 3px #10b981, 0 4px 20px rgba(16, 185, 129, 0.4);
+      animation: pulse-today 2s infinite;
+    }
+    @keyframes pulse-today {
+      0%, 100% {
+        box-shadow: 0 0 0 3px #10b981, 0 4px 20px rgba(16, 185, 129, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 6px #10b981, 0 4px 25px rgba(16, 185, 129, 0.6);
+      }
+    }
+    .modal-overlay {
             backdrop-filter: blur(4px);
         }
         .event-indicator {
