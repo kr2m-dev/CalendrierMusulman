@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier Musulman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        .font-arabic {
+            font-family: 'Amiri', serif;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .day-cell {
+            transition: all 0.2s ease;
+        }
+        .day-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .day-cell.today {
+            box-shadow: 0 0 0 2px #10b981;
+        }
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+        }
+        .event-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 min-h-screen">
+    <!-- Header -->
+    <header class="glass sticky top-0 z-40 border-b border-emerald-100/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <h1 class="text-2xl md:text-3xl font-bold text-emerald-900 font-arabic">التقويم الإسلامي</h1>
+                    <p class="text-emerald-700 text-sm mt-1">Calendrier Musulman</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-right">
+                        <div id="current-date-gregorian" class="text-lg font-semibold text-gray-800"></div>
+                        <div id="current-date-hijri" class="text-emerald-700 font-arabic text-lg"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Controls -->
+        <div class="glass rounded-2xl p-6 mb-8 shadow-xl">
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                <!-- Month/Year Navigation -->
+                <div class="flex items-center gap-4">
+                    <button id="prev-month" class="p-2 rounded-full hover:bg-emerald-100 transition-colors">
+                        <svg class="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                    </button>
+                    <div class="text-center min-w-[200px]">
+                        <h2 id="month-year-gregorian" class="text-2xl font-bold text-gray-800"></h2>
+                        <p id="month-year-hijri" class="text-emerald-700 font-arabic text-xl"></p>
+                    </div>
+                    <button id="next-month" class="p-2 rounded-full hover:bg-emerald-100 transition-colors">
+                        <svg class="w-6 h-6 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="btn-today" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                        Aujourd'hui
+                    </button>
+                    <select id="year-select" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <!-- Populated by JS -->
+                    </select>
+                    <select id="month-select" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="0">Janvier</option>
+                        <option value="1">Février</option>
+                        <option value="2">Mars</option>
+                        <option value="3">Avril</option>
+                        <option value="4">Mai</option>
+                        <option value="5">Juin</option>
+                        <option value="6">Juillet</option>
+                        <option value="7">Août</option>
+                        <option value="8">Septembre</option>
+                        <option value="9">Octobre</option>
+                        <option value="10">Novembre</option>
+                        <option value="11">Décembre</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="flex flex-wrap items-center justify-center gap-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-red-500"></span>
+                        <span class="text-gray-700">Non recommandés</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-yellow-400"></span>
+                        <span class="text-gray-700">Jeûne recommandé</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-blue-500"></span>
+                        <span class="text-gray-700">Se raser</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-amber-700"></span>
+                        <span class="text-gray-700">Relations déconseillées</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded bg-purple-600"></span>
+                        <span class="text-gray-700">Magal / Événement</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="glass rounded-2xl shadow-xl overflow-hidden">
+            <!-- Week Days Header -->
+            <div class="grid grid-cols-7 bg-emerald-700 text-white">
+                <div class="py-4 text-center font-semibold">Dim</div>
+                <div class="py-4 text-center font-semibold">Lun</div>
+                <div class="py-4 text-center font-semibold">Mar</div>
+                <div class="py-4 text-center font-semibold">Mer</div>
+                <div class="py-4 text-center font-semibold">Jeu</div>
+                <div class="py-4 text-center font-semibold">Ven</div>
+                <div class="py-4 text-center font-semibold">Sam</div>
+            </div>
+
+            <!-- Calendar Days -->
+            <div id="calendar-grid" class="grid grid-cols-7 auto-rows-fr">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Events Preview Section -->
+        <div class="mt-8 glass rounded-2xl p-6 shadow-xl">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Événements du mois</h3>
+            <div id="month-events" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Day Detail Modal -->
+    <div id="day-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0 bg-black/50" id="modal-overlay"></div>
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="glass rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-6">
+                        <div>
+                            <h3 id="modal-date-gregorian" class="text-2xl font-bold text-gray-800"></h3>
+                            <p id="modal-date-hijri" class="text-emerald-700 font-arabic text-xl mt-1"></p>
+                        </div>
+                        <button id="modal-close" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div id="modal-content" class="space-y-4">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass mt-12 border-t border-emerald-100/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <p class="text-center text-emerald-700 text-sm">
+                Calendrier Musulman - Basé sur les traditions de la Mouridiya et autres confréries
+            </p>
+        </div>
+    </footer>
+
+    <script src="js/hijri-converter.js"></script>
+    <script src="js/events-data.js"></script>
+    <script src="js/calendar.js"></script>
+</body>
+</html>
